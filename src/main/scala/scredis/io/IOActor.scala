@@ -159,12 +159,16 @@ class IOActor(
       become(connected)
     }
     case CommandFailed(_: Connect) => {
-      logger.error(s"Could not connect to $remote: Command failed")
+      logger.error(s"Could not connect to $remote: Command failed. $self")
       timeoutCancellableOpt.foreach(_.cancel())
+      listenerActor ! ListenerActor.Reconnect
+      logger.error(s"Sent Reconnect to ListenerActor. Now stopping myself $self")
       context.stop(self)
     }
     case ConnectTimeout => {
-      logger.error(s"Could not connect to $remote: Connect timeout")
+      logger.error(s"Could not connect to $remote: Connect timeout. $self")
+      listenerActor ! ListenerActor.Reconnect
+      logger.error(s"Sent Reconnect to ListenerActor. Now stopping myself $self")
       context.stop(self)
     }
   }
