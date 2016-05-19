@@ -27,6 +27,7 @@ import java.net.InetSocketAddress
 object ListenerActor {
   case object Connected
   case object Reconnect
+  case object DoReconnect
   case object Abort
   case object Shutdown
   case class Remove(count: Int)
@@ -291,7 +292,11 @@ class ListenerActor(
   
   def connecting: Receive = {
     case Reconnect => {
-      logger.warn(s"Got Reconnect from IOActor $sender so will try to reconnect")
+      logger.warn(s"Got Reconnect from IOActor $sender so will try to reconnect in 5 secs")
+      context.system.scheduler.scheduleOnce(5 seconds, self, DoReconnect)
+    }
+    case DoReconnect => {
+      logger.warn(s"Reconnecting...")
       reconnect()
     }
     case request: Quit => {
