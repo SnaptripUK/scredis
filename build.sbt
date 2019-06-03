@@ -1,6 +1,4 @@
 import SiteKeys._
-import GhPagesKeys._
-import GitKeys._
 
 organization := "com.livestream"
 
@@ -62,22 +60,3 @@ parallelExecution in Test := false
 testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
 
 concurrentRestrictions in Global += Tags.limit(Tags.Test, 1)
-
-site.settings
-
-ghpages.settings
-
-siteMappings <++= (mappings in packageDoc in Compile, version) map { (m, v) =>
-  for ((f, d) <- m) yield (
-    f,
-    if (v.trim.endsWith("SNAPSHOT")) ("api/snapshot/" + d) else ("api/"+v+"/"+d)
-  )
-}
-
-synchLocal <<= (privateMappings, updatedRepository, gitRunner, streams) map { (mappings, repo, git, s) =>
-  val betterMappings = mappings map { case (file, target) => (file, repo / target) }
-  IO.copy(betterMappings)
-  repo
-}
-
-git.remoteRepo := "git@github.com:Livestream/scredis.git"
